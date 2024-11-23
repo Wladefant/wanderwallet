@@ -1,32 +1,25 @@
 import React, { useState } from 'react';
-import { View, Button, StyleSheet, Text, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function GenerateTab() {
-    const [qrUrl, setQrUrl] = useState('');
-
-    const handleGenerateQRCode = () => {
-        // Basic string to encode in the QR code
-        const basicString = 'Hello, this is a QR Code!';
-        // Google Charts API to generate a QR code
-        const apiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(basicString)}`;
-        setQrUrl(apiUrl);
-    };
+    const [showQRCode, setShowQRCode] = useState(false);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Press the button to generate a basic QR code</Text>
-            <Button title="Generate QR Code" onPress={handleGenerateQRCode} />
-            <View style={styles.qrContainer}>
-                {qrUrl ? (
-                    <Image
-                        source={{ uri: qrUrl }}
-                        style={styles.qrCode}
-                        resizeMode="contain"
-                    />
-                ) : (
-                    <Text style={styles.placeholderText}>No QR Code yet</Text>
-                )}
-            </View>
+            <Text style={styles.text}>Generate a basic QR code</Text>
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => setShowQRCode(true)}
+            >
+                <Text style={styles.buttonText}>Generate QR Code</Text>
+            </TouchableOpacity>
+
+            {showQRCode && (
+                <View style={styles.qrContainer}>
+                    <QRCode value="Hello, World!" size={200} />
+                </View>
+            )}
         </View>
     );
 }
@@ -36,24 +29,25 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 16,
+        backgroundColor: '#f9f9f9',
     },
     text: {
-        fontSize: 16,
-        marginBottom: 16,
+        fontSize: 18,
+        marginBottom: 20,
         textAlign: 'center',
+    },
+    button: {
+        backgroundColor: '#4caf50',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     qrContainer: {
         marginTop: 20,
-        alignItems: 'center',
-    },
-    qrCode: {
-        width: 200,
-        height: 200,
-    },
-    placeholderText: {
-        marginTop: 16,
-        fontSize: 16,
-        color: 'gray',
     },
 });

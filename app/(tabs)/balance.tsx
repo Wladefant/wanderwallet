@@ -20,8 +20,6 @@ export default function BalanceTab() {
         { id: '2', type: 'Received', amount: 20, date: '2024-11-20' },
         { id: '3', type: 'Received', amount: 50, date: '2023-10-20' },
         { id: '4', type: 'Sent', amount: 20, date: '2023-09-19' },
-        { id: '5', type: 'Received', amount: 50, date: '2024-08-19' },
-        { id: '6', type: 'Sent', amount: 20, date: '2024-07-18' },
     ]);
 
     type Transaction = {
