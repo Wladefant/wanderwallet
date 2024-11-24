@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,6 +9,15 @@ import {
     FlatList,
     Image,
 } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+
+type RouteParams = {
+    params?: {
+        amount?: string;
+        wallet?: string;
+    };
+};
 
 export default function BalanceTab() {
     const [walletAddress, setWalletAddress] = useState('');
@@ -26,6 +35,23 @@ export default function BalanceTab() {
     const [showRoundModal, setShowRoundModal] = useState(false);
     const [amountToSend, setAmountToSend] = useState(0);
     const [additionalAmount, setAdditionalAmount] = useState(0);
+    const route = useRoute<RouteProp<RouteParams, 'params'>>();
+    const [selectedWallet, setSelectedWallet] = useState(
+        'HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH'
+    );
+
+    const wallets = [
+        { label: 'Default Wallet', value: 'HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH' },
+        { label: 'Secondary Wallet', value: '2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S' },
+    ];
+
+    useEffect(() => {
+        if (route.params?.amount) {
+            setTransactionAmount(route.params.amount);
+            setSelectedWallet(route.params.wallet || wallets[0].value);
+            setSendMoneyModalVisible(true); // Automatically show Send Money modal
+        }
+    }, [route.params]);
 
     type Transaction = {
         id: string;
@@ -60,6 +86,9 @@ export default function BalanceTab() {
                 date: new Date().toISOString().split('T')[0],
             },
         ]);
+        alert(
+            `Successfully sent ${amount} SOL to ${selectedWallet}. Transaction confirmed!`
+        );
     };
 
     const handleAddMoney = () => {
@@ -82,7 +111,9 @@ export default function BalanceTab() {
             if (!Number.isInteger(amount)) {
                 // Calculate the additional amount needed to round up
                 const nextWholeNumber = Math.ceil(amount);
-                const extraAmount = parseFloat((nextWholeNumber - amount).toFixed(2));
+                const extraAmount = parseFloat(
+                    (nextWholeNumber - amount).toFixed(2)
+                );
                 setAdditionalAmount(extraAmount);
                 setShowRoundModal(true);
                 setAmountToSend(amount);
@@ -164,7 +195,10 @@ export default function BalanceTab() {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.actionButton}
-                            onPress={() => setSendMoneyModalVisible(true)}
+                            onPress={() => {
+                                setSendMoneyModalVisible(true);
+                                setTransactionAmount('');
+                            }}
                         >
                             <Text style={styles.actionButtonText}>Send Money</Text>
                         </TouchableOpacity>
@@ -215,6 +249,23 @@ export default function BalanceTab() {
                         <View style={styles.modalOverlay}>
                             <View style={styles.modalContent}>
                                 <Text style={styles.modalText}>Send Money</Text>
+                                {!route.params?.amount && (
+                                    <Picker
+                                        selectedValue={selectedWallet}
+                                        onValueChange={(itemValue) =>
+                                            setSelectedWallet(itemValue)
+                                        }
+                                        style={styles.picker}
+                                    >
+                                        {wallets.map((wallet) => (
+                                            <Picker.Item
+                                                key={wallet.value}
+                                                label={wallet.label}
+                                                value={wallet.value}
+                                            />
+                                        ))}
+                                    </Picker>
+                                )}
                                 <TextInput
                                     style={styles.input}
                                     value={transactionAmount}
@@ -439,5 +490,10 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         marginBottom: 16,
+    },
+    picker: {
+        width: '100%',
+        height: 50,
+        marginBottom: 20,
     },
 });

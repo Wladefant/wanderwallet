@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, Button } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // Navigation hook
 import { CameraView, Camera } from "expo-camera";
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const navigation = useNavigation(); // Navigation hook
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -17,7 +19,10 @@ export default function App() {
 
   const handleBarcodeScanned = ({ type, data }) => {
     setScanned(true);
-    alert(`${data} Solana to be paid`);
+    navigation.navigate("balance", {
+      amount: data, // Autofill with 2.5 SOL
+      wallet: "HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH", // Target wallet
+    });
   };
 
   if (hasPermission === null) {
@@ -48,13 +53,5 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
-  },
-  Button: {
-    color: 'rgb(0, 128, 0)', // Green color with transparency
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
