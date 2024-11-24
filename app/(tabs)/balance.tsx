@@ -46,12 +46,12 @@ export default function BalanceTab() {
     ];
 
     useEffect(() => {
-        if (route.params?.amount) {
+        if (loggedIn && route.params?.amount) {
             setTransactionAmount(route.params.amount);
             setSelectedWallet(route.params.wallet || wallets[0].value);
             setSendMoneyModalVisible(true); // Automatically show Send Money modal
         }
-    }, [route.params]);
+    }, [loggedIn, route.params]);
 
     type Transaction = {
         id: string;
