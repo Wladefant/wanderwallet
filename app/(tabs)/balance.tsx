@@ -7,6 +7,7 @@ import {
     StyleSheet,
     Modal,
     FlatList,
+    ActivityIndicator,
     Image,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -35,6 +36,7 @@ export default function BalanceTab() {
     const [showRoundModal, setShowRoundModal] = useState(false);
     const [amountToSend, setAmountToSend] = useState(0);
     const [additionalAmount, setAdditionalAmount] = useState(0);
+    const [loading, setLoading] = useState(false); // Added loading state
     const route = useRoute<RouteProp<RouteParams, 'params'>>();
     const [selectedWallet, setSelectedWallet] = useState(
         'HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH'
@@ -46,12 +48,12 @@ export default function BalanceTab() {
     ];
 
     useEffect(() => {
-        if (loggedIn && route.params?.amount) {
+        if (route.params?.amount) {
             setTransactionAmount(route.params.amount);
             setSelectedWallet(route.params.wallet || wallets[0].value);
             setSendMoneyModalVisible(true); // Automatically show Send Money modal
         }
-    }, [loggedIn, route.params]);
+    }, [route.params]);
 
     type Transaction = {
         id: string;
@@ -61,34 +63,42 @@ export default function BalanceTab() {
     };
 
     const addMoneyToBalance = (amount: number) => {
-        setFakeBalance((prev) => (parseFloat(prev) + amount).toFixed(2));
-        setTransactions((prev) => [
-            ...prev,
-            {
-                id: (prev.length + 1).toString(),
-                type: 'Received',
-                amount,
-                date: new Date().toISOString().split('T')[0],
-            },
-        ]);
-        setAddMoneyModalVisible(false);
-        setTransactionAmount('');
+        setLoading(true); // Show loader
+        setTimeout(() => {
+            setFakeBalance((prev) => (parseFloat(prev) + amount).toFixed(2));
+            setTransactions((prev) => [
+                ...prev,
+                {
+                    id: (prev.length + 1).toString(),
+                    type: 'Received',
+                    amount,
+                    date: new Date().toISOString().split('T')[0],
+                },
+            ]);
+            setAddMoneyModalVisible(false);
+            setTransactionAmount('');
+            setLoading(false); // Hide loader after 1 second
+        }, 1000); // 1-second delay
     };
 
     const sendMoneyFromBalance = (amount: number, isDonation: boolean = false) => {
-        setFakeBalance((prev) => (parseFloat(prev) - amount).toFixed(2));
-        setTransactions((prev) => [
-            ...prev,
-            {
-                id: (prev.length + 1).toString(),
-                type: isDonation ? 'Donation' : 'Sent',
-                amount,
-                date: new Date().toISOString().split('T')[0],
-            },
-        ]);
-        alert(
-            `Successfully sent ${amount} SOL to ${selectedWallet}. Transaction confirmed!`
-        );
+        setLoading(true); // Show loader
+        setTimeout(() => {
+            setFakeBalance((prev) => (parseFloat(prev) - amount).toFixed(2));
+            setTransactions((prev) => [
+                ...prev,
+                {
+                    id: (prev.length + 1).toString(),
+                    type: isDonation ? 'Donation' : 'Sent',
+                    amount,
+                    date: new Date().toISOString().split('T')[0],
+                },
+            ]);
+            setLoading(false); // Hide loader after 1 second
+            alert(
+                `Successfully sent ${amount} SOL to ${selectedWallet}. Transaction confirmed!`
+            );
+        }, 1000); // 1-second delay
     };
 
     const handleAddMoney = () => {
@@ -129,7 +139,6 @@ export default function BalanceTab() {
     };
 
     const handleConfirmAdditional = () => {
-        // Subtract both the original amount and the additional amount
         sendMoneyFromBalance(amountToSend);
         sendMoneyFromBalance(additionalAmount, true); // Mark as a donation
         setShowRoundModal(false);
@@ -138,7 +147,6 @@ export default function BalanceTab() {
     };
 
     const handleDeclineAdditional = () => {
-        // Subtract only the original amount
         sendMoneyFromBalance(amountToSend);
         setShowRoundModal(false);
         setSendMoneyModalVisible(false);
@@ -169,8 +177,19 @@ export default function BalanceTab() {
         </View>
     );
 
+    const renderLoader = () => (
+        <Modal transparent visible={loading} animationType="fade">
+            <View style={styles.loaderOverlay}>
+                <ActivityIndicator size="large" color="#4caf50" />
+                <Text style={styles.loaderText}>Processing Transaction...</Text>
+            </View>
+        </Modal>
+    );
+
     return (
         <View style={styles.container}>
+            {renderLoader()}
+
             {loggedIn ? (
                 <>
                     <View style={styles.balanceContainer}>
@@ -185,7 +204,6 @@ export default function BalanceTab() {
                         contentContainerStyle={styles.transactionList}
                     />
 
-                    {/* Action Buttons */}
                     <View style={styles.actionButtonsContainer}>
                         <TouchableOpacity
                             style={styles.actionButton}
