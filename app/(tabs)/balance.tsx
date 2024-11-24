@@ -21,6 +21,8 @@ type RouteParams = {
 };
 
 export default function BalanceTab() {
+    const DONATION_WALLET_ADDRESS = 'Hpssa588V1vvpAgLNcgPz5tmuDjeXUkBgBXMFJb4rdLv';
+
     const [walletAddress, setWalletAddress] = useState('');
     const [loggedIn, setLoggedIn] = useState(false);
     const [addMoneyModalVisible, setAddMoneyModalVisible] = useState(false);
@@ -82,7 +84,9 @@ export default function BalanceTab() {
     };
 
     const sendMoneyFromBalance = (amount: number, isDonation: boolean = false) => {
-        setLoading(true); // Show loader
+        setLoading(true);
+        const targetWallet = isDonation ? DONATION_WALLET_ADDRESS : selectedWallet;
+
         setTimeout(() => {
             setFakeBalance((prev) => (parseFloat(prev) - amount).toFixed(2));
             setTransactions((prev) => [
@@ -96,7 +100,9 @@ export default function BalanceTab() {
             ]);
             setLoading(false); // Hide loader after 1 second
             alert(
-                `Successfully sent ${amount} SOL to ${selectedWallet}. Transaction confirmed!`
+                `Successfully sent ${amount} SOL to ${
+                    isDonation ? 'Hpssa588V1vvpAgLNcgPz5tmuDjeXUkBgBXMFJb4rdLv' : targetWallet
+                }. Transaction confirmed!`
             );
         }, 1000); // 1-second delay
     };
@@ -267,7 +273,7 @@ export default function BalanceTab() {
                         <View style={styles.modalOverlay}>
                             <View style={styles.modalContent}>
                                 <Text style={styles.modalText}>Send Money</Text>
-                                {!route.params?.amount && (
+                                {!route.params?.amount && !additionalAmount && (
                                     <Picker
                                         selectedValue={selectedWallet}
                                         onValueChange={(itemValue) =>
